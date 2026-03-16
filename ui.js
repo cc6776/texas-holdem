@@ -2,6 +2,7 @@ const game = new TexasHoldem();
 let logs = [];
 let tutorialMode = false;
 let tutorialStep = 0;
+let stats = { wins: 0, losses: 0, hands: 0 };
 
 // ============== Tutorial System ==============
 const TUTORIAL_TIPS = {
@@ -108,6 +109,15 @@ function createCardHTML(card, facedown = false, mini = false) {
   </div>`;
 }
 
+function getPositionLabel(i) {
+  if (game.phase === 'idle') return '';
+  const labels = [];
+  if (i === game.dealerIndex) labels.push('<span style="background:#f39c12;color:#000;padding:1px 5px;border-radius:3px;font-size:0.65em;font-weight:bold;">D 庄家</span>');
+  if (i === game.sbIndex) labels.push('<span style="background:#3498db;color:#fff;padding:1px 5px;border-radius:3px;font-size:0.65em;">SB 小盲</span>');
+  if (i === game.bbIndex) labels.push('<span style="background:#e74c3c;color:#fff;padding:1px 5px;border-radius:3px;font-size:0.65em;">BB 大盲</span>');
+  return labels.join(' ');
+}
+
 function renderPlayers() {
   game.players.forEach((p, i) => {
     const el = document.getElementById(`player${i}`);
@@ -125,7 +135,8 @@ function renderPlayers() {
     el.innerHTML = `
       ${handHTML}
       <div class="player-info">
-        <div class="player-name">${p.name}${i === game.dealerIndex ? ' D' : ''}</div>
+        <div class="player-name">${p.name}</div>
+        <div class="player-position">${getPositionLabel(i)}</div>
         <div class="player-chips">Chips 筹码: ${p.chips}</div>
         ${p.bet > 0 ? `<div class="player-bet">Bet 下注: ${p.bet}</div>` : ''}
         <div class="player-action-label">${p.folded ? 'FOLD 已弃牌' : (p.allIn ? 'ALL-IN 全押!' : '')}</div>
@@ -197,7 +208,18 @@ function renderControls() {
   }
 
   const { actions, toCall, minRaise } = game.getValidActions();
-  let html = '';
+
+  // Status hint
+  let hint = '<div style="color:#ffd700;font-size:0.85em;margin-bottom:8px;text-align:center;">';
+  hint += '▶ 轮到你了！Your turn! ';
+  if (toCall > 0) {
+    hint += `— 需要跟注 <b>${toCall}</b> 才能继续，或者弃牌放弃`;
+  } else {
+    hint += '— 没人下注，你可以免费看下一张牌（Check 过牌）';
+  }
+  hint += '</div>';
+
+  let html = hint;
 
   if (actions.includes('fold')) html += `<button class="btn btn-fold" onclick="humanAction('fold')">Fold 弃牌</button>`;
   if (actions.includes('check')) html += `<button class="btn btn-check" onclick="humanAction('check')">Check 过牌</button>`;
@@ -213,11 +235,21 @@ function renderControls() {
   else if (tutorialMode) showTutorialTip(game.phase);
 }
 
+function renderStats() {
+  const el = document.getElementById('statsDisplay');
+  if (stats.hands === 0) { el.innerHTML = '还没开始'; return; }
+  const rate = stats.hands > 0 ? Math.round(stats.wins / stats.hands * 100) : 0;
+  el.innerHTML = `<div>W 赢: <b style="color:#2ecc71;">${stats.wins}</b></div>
+    <div>L 输: <b style="color:#e74c3c;">${stats.losses}</b></div>
+    <div>Win% 胜率: <b style="color:#ffd700;">${rate}%</b></div>`;
+}
+
 function renderAll() {
   renderPlayers();
   renderCommunity();
   renderHandInfo();
   renderControls();
+  renderStats();
 }
 
 let lastPhase = 'idle';
@@ -276,10 +308,15 @@ function processResult(result) {
       processResult(aiResult);
     }, 600 + Math.random() * 600);
   } else if (result.status === 'hand_over') {
+    stats.hands++;
+    if (result.winner.isHuman) stats.wins++; else stats.losses++;
     log(`${result.winner.name} wins ${result.pot}! (others folded)`);
     renderAll();
     showResult(null, result.winner, result.pot);
   } else if (result.status === 'showdown') {
+    stats.hands++;
+    const youWon = result.winners.some(w => w.player.isHuman);
+    if (youWon) stats.wins++; else stats.losses++;
     log(`Showdown! Pot: ${result.pot}`);
     renderAll();
     showShowdown(result);

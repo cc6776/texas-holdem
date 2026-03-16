@@ -35,6 +35,7 @@ body { background: #1a1a2e; font-family: 'Segoe UI', sans-serif; color: #fff; mi
 .player-chips { font-size: 0.75em; color: #ffd700; margin-top: 2px; }
 .player-bet { font-size: 0.7em; color: #4ecdc4; margin-top: 2px; }
 .player-hand { display: flex; gap: 4px; margin-bottom: 6px; }
+.player-position { margin-top: 2px; min-height: 1em; }
 .player-action-label { font-size: 0.7em; color: #ff6b6b; margin-top: 3px; min-height: 1em; }
 
 /* Player positions around table */
@@ -324,6 +325,10 @@ body { background: #1a1a2e; font-family: 'Segoe UI', sans-serif; color: #fff; mi
   <div class="message-log">
     <h3>Actions / 行动记录</h3>
     <div id="logContent"></div>
+  </div>
+  <div class="hand-info" style="max-width:120px;">
+    <h3>Stats / 战绩</h3>
+    <div id="statsDisplay" style="font-size:0.85em;color:#ccc;">-</div>
   </div>
 </div>
 

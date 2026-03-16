@@ -208,10 +208,10 @@ class TexasHoldem {
     }
 
     // Post blinds
-    const sbIdx = this.nextActive(this.dealerIndex);
-    const bbIdx = this.nextActive(sbIdx);
-    this.postBlind(sbIdx, this.smallBlind);
-    this.postBlind(bbIdx, this.bigBlind);
+    this.sbIndex = this.nextActive(this.dealerIndex);
+    this.bbIndex = this.nextActive(this.sbIndex);
+    this.postBlind(this.sbIndex, this.smallBlind);
+    this.postBlind(this.bbIndex, this.bigBlind);
     this.currentBet = this.bigBlind;
     this.activePlayerIndex = this.nextActive(bbIdx);
 
