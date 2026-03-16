@@ -137,7 +137,7 @@ function renderCommunity() {
   const el = document.getElementById('communityCards');
   el.innerHTML = game.communityCards.map(c => createCardHTML(c)).join('');
   document.getElementById('potDisplay').textContent = `Pot: ${game.pot}`;
-  const phaseNames = { idle: 'Click Deal to Start', preflop: 'PREFLOP / Fa Pai Qian', flop: 'FLOP / Fan Pai', turn: 'TURN / Zhuan Pai', river: 'RIVER / He Pai', showdown: 'SHOWDOWN', ended: 'ENDED' };
+  const phaseNames = { idle: '点击 Deal 开始', preflop: 'PREFLOP / 翻牌前', flop: 'FLOP / 翻牌', turn: 'TURN / 转牌', river: 'RIVER / 河牌', showdown: 'SHOWDOWN / 摊牌', ended: '结束' };
   document.getElementById('phaseDisplay').textContent = phaseNames[game.phase] || game.phase.toUpperCase();
 }
 
@@ -156,24 +156,24 @@ function renderControls() {
   const controls = document.getElementById('controls');
 
   if (game.phase === 'idle' || game.phase === 'ended' || game.phase === 'showdown') {
-    controls.innerHTML = `<button class="btn btn-deal" onclick="startNewHand()">Deal / Fa Pai</button>`;
+    controls.innerHTML = `<button class="btn btn-deal" onclick="startNewHand()">Deal / 发牌</button>`;
     return;
   }
 
   const p = game.players[game.activePlayerIndex];
   if (!p.isHuman) {
-    controls.innerHTML = `<div style="color:#aaa;">AI is thinking... / AI Si Kao Zhong...</div>`;
+    controls.innerHTML = `<div style="color:#aaa;">AI 思考中...</div>`;
     return;
   }
 
   const { actions, toCall, minRaise } = game.getValidActions();
   let html = '';
 
-  if (actions.includes('fold')) html += `<button class="btn btn-fold" onclick="humanAction('fold')">Fold Qi Pai</button>`;
-  if (actions.includes('check')) html += `<button class="btn btn-check" onclick="humanAction('check')">Check Guo Pai</button>`;
-  if (actions.includes('call')) html += `<button class="btn btn-call" onclick="humanAction('call')">Call Gen Zhu (${toCall})</button>`;
+  if (actions.includes('fold')) html += `<button class="btn btn-fold" onclick="humanAction('fold')">Fold 弃牌</button>`;
+  if (actions.includes('check')) html += `<button class="btn btn-check" onclick="humanAction('check')">Check 过牌</button>`;
+  if (actions.includes('call')) html += `<button class="btn btn-call" onclick="humanAction('call')">Call 跟注 (${toCall})</button>`;
   if (actions.includes('raise')) html += `<input type="number" class="raise-input" id="raiseInput" value="${minRaise}" min="${minRaise}" max="${p.chips + p.bet}" step="${game.bigBlind}">
-    <button class="btn btn-raise" onclick="humanAction('raise')">Raise Jia Zhu</button>`;
+    <button class="btn btn-raise" onclick="humanAction('raise')">Raise 加注</button>`;
   if (actions.includes('allin')) html += `<button class="btn btn-allin" onclick="humanAction('allin')">All-In (${p.chips})</button>`;
 
   controls.innerHTML = html;
@@ -195,7 +195,7 @@ let lastPhase = 'idle';
 function startNewHand() {
   document.getElementById('overlay').classList.remove('show');
   game.players.forEach(p => { if (p.chips <= 0 && !p.isHuman) p.chips = 500; });
-  if (game.players[0].chips <= 0) { game.players[0].chips = 1000; log('You rebuy 1000 chips! / Ni Chong Xin Mai Ru 1000 Chou Ma!'); }
+  if (game.players[0].chips <= 0) { game.players[0].chips = 1000; log('You rebuy 1000 chips! / 你重新买入 1000 筹码！'); }
 
   const result = game.startHand();
   log(`--- Hand #${game.handNumber} ---`);
@@ -261,11 +261,11 @@ function showResult(results, winner, pot) {
   const card = document.getElementById('resultCard');
   const isYou = winner.isHuman;
   card.innerHTML = `
-    <h2>${isYou ? '🎉 You Win! / Ni Ying Le!' : '😅 ' + winner.name + ' Wins'}</h2>
+    <h2>${isYou ? '🎉 你赢了！' : '😅 ' + winner.name + ' Wins'}</h2>
     <p style="color:#4ecdc4;font-size:1.2em;">+${pot} chips</p>
-    <p style="margin-top:12px;color:#aaa;">${isYou ? 'All other players folded! / Qi Ta Wan Jia Dou Qi Pai Le!' : 'All other players folded / Qi Ta Wan Jia Qi Pai'}</p>
-    ${tutorialMode ? '<p style="margin-top:8px;color:#ffd700;font-size:0.85em;">TIP: You won! If everyone else folds, last one standing wins. / Qi Ta Ren Dou Qi Pai Le, Sheng Xia De Ren Ying!</p>' : ''}
-    <button class="btn btn-deal" onclick="startNewHand()" style="margin-top:20px;">Next Hand / Xia Yi Shou</button>
+    <p style="margin-top:12px;color:#aaa;">${isYou ? '其他玩家都弃牌了！' : '其他玩家弃牌'}</p>
+    ${tutorialMode ? '<p style="margin-top:8px;color:#ffd700;font-size:0.85em;">TIP: 所有人弃牌，剩下的人赢走筹码！</p>' : ''}
+    <button class="btn btn-deal" onclick="startNewHand()" style="margin-top:20px;">下一手 / Next</button>
   `;
   document.getElementById('overlay').classList.add('show');
 }
@@ -290,12 +290,12 @@ function showShowdown(result) {
   const winnerNames = result.winners.map(w => w.player.name).join(', ');
   const youWon = result.winners.some(w => w.player.isHuman);
   card.innerHTML = `
-    <h2>Showdown / Tan Pai</h2>
+    <h2>摊牌 Showdown</h2>
     <div class="result-players">${playersHTML}</div>
-    <p style="color:#ffd700;font-size:1.1em;margin-top:12px;">🏆 ${winnerNames} wins ${result.pot} chips!</p>
-    ${youWon ? '<p style="color:#4ecdc4;margin-top:6px;">🎉 Congratulations! / Gong Xi!</p>' : '<p style="color:#aaa;margin-top:6px;">Better luck next time! / Xia Ci Jia You!</p>'}
-    ${tutorialMode ? '<p style="margin-top:8px;color:#ffd700;font-size:0.85em;">TIP: The player with the strongest 5-card combo wins. / Pai Xing Zui Da De Ren Ying Zou Chou Ma!</p>' : ''}
-    <button class="btn btn-deal" onclick="startNewHand()" style="margin-top:20px;">Next Hand / Xia Yi Shou</button>
+    <p style="color:#ffd700;font-size:1.1em;margin-top:12px;">🏆 ${winnerNames} 赢了 ${result.pot} 筹码！</p>
+    ${youWon ? '<p style="color:#4ecdc4;margin-top:6px;">🎉 恭喜你！</p>' : '<p style="color:#aaa;margin-top:6px;">下次加油！</p>'}
+    ${tutorialMode ? '<p style="margin-top:8px;color:#ffd700;font-size:0.85em;">TIP: 牌型最大的人赢走全部筹码！</p>' : ''}
+    <button class="btn btn-deal" onclick="startNewHand()" style="margin-top:20px;">下一手 / Next</button>
   `;
   document.getElementById('overlay').classList.add('show');
 }
