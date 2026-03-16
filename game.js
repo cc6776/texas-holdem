@@ -192,6 +192,7 @@ class TexasHoldem {
       p.bet = 0;
       p.folded = false;
       p.allIn = false;
+      p.hasActed = false;
       if (p.chips <= 0) { p.folded = true; p.chips = 0; }
     }
 
@@ -241,6 +242,7 @@ class TexasHoldem {
   doAction(action, amount = 0) {
     const p = this.players[this.activePlayerIndex];
     const toCall = this.currentBet - p.bet;
+    p.hasActed = true;
 
     switch (action) {
       case 'fold':
@@ -267,6 +269,9 @@ class TexasHoldem {
         this.currentBet = raiseTotal;
         if (p.chips === 0) p.allIn = true;
         this.lastAction = `${p.name} Raise to ${raiseTotal}`;
+        // Others need to respond to the raise
+        for (const other of this.players) { if (other !== p) other.hasActed = false; }
+        p.hasActed = true;
         break;
       case 'allin':
         const allAmt = p.chips;
@@ -274,7 +279,11 @@ class TexasHoldem {
         this.pot += allAmt;
         p.chips = 0;
         p.allIn = true;
-        if (p.bet > this.currentBet) this.currentBet = p.bet;
+        if (p.bet > this.currentBet) {
+          this.currentBet = p.bet;
+          for (const other of this.players) { if (other !== p) other.hasActed = false; }
+          p.hasActed = true;
+        }
         this.lastAction = `${p.name} All-In! (${allAmt})`;
         break;
     }
@@ -297,22 +306,16 @@ class TexasHoldem {
     const acting = this.actingPlayers();
     if (acting.length <= 1) return true;
 
-    // Move to next player temporarily to check
-    let nextIdx = this.nextActive(this.activePlayerIndex);
-    // If we've gone all the way around and everyone has matched the bet
+    // Round is over only when ALL acting players have acted AND all bets match
+    const allActed = acting.every(p => p.hasActed);
     const allMatched = acting.every(p => p.bet === this.currentBet);
 
-    if (allMatched) {
-      // Check if everyone has acted at least once
-      // Simple: if next player index would be the first player after dealer/blinds
-      return true;
-    }
-    return false;
+    return allActed && allMatched;
   }
 
   nextPhase() {
-    // Reset bets for new round
-    for (const p of this.players) p.bet = 0;
+    // Reset bets and action flags for new round
+    for (const p of this.players) { p.bet = 0; p.hasActed = false; }
     this.currentBet = 0;
 
     switch (this.phase) {
