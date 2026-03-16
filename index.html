@@ -91,6 +91,30 @@ body { background: #1a1a2e; font-family: 'Segoe UI', sans-serif; color: #fff; mi
 .result-player.winner { color: #ffd700; font-weight: bold; }
 .result-hand-name { font-size: 0.85em; color: #4ecdc4; }
 
+/* Rules overlay */
+.rules-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; display: flex; justify-content: center; align-items: center; }
+.rules-overlay.hidden { display: none; }
+.rules-box { background: #1e1e3a; border: 2px solid #ffd700; border-radius: 16px; padding: 28px 36px; max-width: 680px; width: 90%; max-height: 90vh; overflow-y: auto; }
+.rules-box h2 { color: #ffd700; text-align: center; margin-bottom: 16px; font-size: 1.4em; }
+.rules-section { margin-bottom: 18px; }
+.rules-section h3 { color: #4ecdc4; font-size: 1em; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
+.rules-section p, .rules-section li { font-size: 0.9em; color: #ddd; line-height: 1.7; }
+.rules-section ul { padding-left: 20px; }
+.rules-section .emoji-step { display: flex; gap: 10px; align-items: flex-start; margin: 6px 0; }
+.rules-section .emoji-step span:first-child { font-size: 1.3em; min-width: 30px; text-align: center; }
+.rules-visual { display: flex; justify-content: center; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
+.rules-visual .card { width: 40px; height: 58px; font-size: 0.7em; }
+.rules-visual .card .rank { font-size: 0.85em; }
+.rules-visual .card .suit { font-size: 0.95em; }
+.rules-label { text-align: center; font-size: 0.75em; color: #aaa; margin-top: 4px; }
+.btn-rules { background: rgba(255,255,255,0.1); color: #ffd700; border: 1px solid #ffd700; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 0.8em; position: fixed; top: 12px; right: 12px; z-index: 50; }
+.btn-rules:hover { background: rgba(255,215,0,0.15); }
+.highlight-box { background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.2); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+.highlight-box p { color: #ffd700 !important; font-weight: bold; }
+.action-grid { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0; }
+.action-name { color: #4ecdc4; font-weight: bold; font-size: 0.9em; }
+.action-desc { color: #ddd; font-size: 0.85em; }
+
 @media (max-width: 960px) {
   .table-container { width: 100vw; height: 400px; transform: scale(0.85); }
   .info-panel { flex-direction: column; padding: 8px; }
@@ -100,6 +124,77 @@ body { background: #1a1a2e; font-family: 'Segoe UI', sans-serif; color: #fff; mi
 <body>
 
 <div class="header">♠ Texas Hold'em Poker ♥</div>
+<button class="btn-rules" onclick="document.getElementById('rulesOverlay').classList.remove('hidden')" style="right:120px;">? Rules</button>
+<button class="btn-rules" id="btnTutorial" onclick="toggleTutorial()" style="right:12px;border-color:#4ecdc4;color:#4ecdc4;">Tutorial OFF</button>
+
+<!-- Tutorial tip bubble -->
+<div id="tutorialTip" class="hidden" style="position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1e1e3a;border:2px solid #4ecdc4;border-radius:12px;padding:14px 20px;max-width:480px;width:90%;z-index:60;box-shadow:0 4px 20px rgba(0,0,0,0.5);"></div>
+
+<!-- Rules Overlay -->
+<div class="rules-overlay" id="rulesOverlay">
+<div class="rules-box">
+  <h2>♠ How to Play / 怎么玩 ♥</h2>
+
+  <div class="rules-section">
+    <h3>一句话版本</h3>
+    <div class="highlight-box">
+      <p>用你的 2 张底牌 + 桌上 5 张公共牌，凑出最大的 5 张牌组合，赢走所有筹码。</p>
+    </div>
+  </div>
+
+  <div class="rules-section">
+    <h3>一局牌的流程（就 4 步）</h3>
+    <div class="emoji-step"><span>1.</span><span><b>发底牌</b> - 每人拿到 2 张牌（只有你自己能看到）</span></div>
+    <div class="emoji-step"><span>2.</span><span><b>翻牌 Flop</b> - 桌上翻出 3 张公共牌（所有人共用）</span></div>
+    <div class="emoji-step"><span>3.</span><span><b>转牌 Turn</b> - 桌上再加 1 张（现在共 4 张）</span></div>
+    <div class="emoji-step"><span>4.</span><span><b>河牌 River</b> - 桌上最后加 1 张（共 5 张），然后比大小</span></div>
+    <p style="color:#aaa;font-size:0.8em;margin-top:6px;">每一步之间，大家轮流决定要不要继续玩（下注或弃牌）</p>
+  </div>
+
+  <div class="rules-section">
+    <h3>你能做什么？（按钮说明）</h3>
+    <div class="action-grid">
+      <span class="action-name">Fold 弃牌</span><span class="action-desc">不玩了，放弃这一局（牌不好就弃）</span>
+      <span class="action-name">Check 过牌</span><span class="action-desc">不加钱，轮到下一个人（没人下注时才能用）</span>
+      <span class="action-name">Call 跟注</span><span class="action-desc">别人下了注，你跟上同样的钱</span>
+      <span class="action-name">Raise 加注</span><span class="action-desc">加更多的钱，给别人压力</span>
+      <span class="action-name">All-In 全押</span><span class="action-desc">把所有筹码都押上去，梭哈！</span>
+    </div>
+  </div>
+
+  <div class="rules-section">
+    <h3>牌型大小（从大到小）</h3>
+    <p style="font-size:0.8em;color:#aaa;margin-bottom:8px;">游戏中左下角会自动显示你当前的牌型，不用背</p>
+    <div class="action-grid">
+      <span class="action-name">皇家同花顺</span><span class="action-desc">A K Q J 10 同花色（最大，极罕见）</span>
+      <span class="action-name">同花顺</span><span class="action-desc">5 张连续 + 同花色</span>
+      <span class="action-name">四条</span><span class="action-desc">4 张一样的（如 4 个 A）</span>
+      <span class="action-name">葫芦</span><span class="action-desc">3 张一样 + 2 张一样</span>
+      <span class="action-name">同花</span><span class="action-desc">5 张同花色（不用连续）</span>
+      <span class="action-name">顺子</span><span class="action-desc">5 张连续（不用同花色）</span>
+      <span class="action-name">三条</span><span class="action-desc">3 张一样的</span>
+      <span class="action-name">两对</span><span class="action-desc">2 组对子</span>
+      <span class="action-name">一对</span><span class="action-desc">2 张一样的（最常见）</span>
+      <span class="action-name">高牌</span><span class="action-desc">啥也没有，比最大的那张牌</span>
+    </div>
+  </div>
+
+  <div class="rules-section">
+    <h3>新手小贴士</h3>
+    <ul>
+      <li><b>牌不好就弃</b> - 别每局都跟到底，弃牌不丢人</li>
+      <li><b>看左下角</b> - 系统会实时告诉你现在是什么牌型</li>
+      <li><b>输光了没关系</b> - 自动重新买入，随便练</li>
+      <li><b>多玩几局</b> - 打 5 局你就懂流程了</li>
+    </ul>
+  </div>
+
+  <div style="text-align:center;margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+    <button class="btn" onclick="document.getElementById('rulesOverlay').classList.add('hidden');if(!tutorialMode)toggleTutorial();startNewHand();" style="background:linear-gradient(135deg,#4ecdc4,#2ecc71);color:#1a1a2e;font-size:1.05em;padding:14px 32px;">New Player Tutorial / 新手教程模式</button>
+    <button class="btn btn-deal" onclick="document.getElementById('rulesOverlay').classList.add('hidden')" style="font-size:1.05em;padding:14px 32px;">I Got It / 我懂了！</button>
+  </div>
+</div>
+</div>
 
 <div class="table-container">
   <div class="poker-table">
