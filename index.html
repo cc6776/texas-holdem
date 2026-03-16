@@ -115,9 +115,92 @@ body { background: #1a1a2e; font-family: 'Segoe UI', sans-serif; color: #fff; mi
 .action-name { color: #4ecdc4; font-weight: bold; font-size: 0.9em; }
 .action-desc { color: #ddd; font-size: 0.85em; }
 
+/* Tablet */
 @media (max-width: 960px) {
-  .table-container { width: 100vw; height: 400px; transform: scale(0.85); }
+  .table-container { width: 100vw; height: 420px; }
+  .poker-table { width: 580px; height: 300px; border-width: 8px; border-radius: 150px; }
   .info-panel { flex-direction: column; padding: 8px; }
+  .card { width: 48px; height: 68px; }
+  .card .rank { font-size: 1em; }
+  .card .suit { font-size: 1.1em; }
+  .card-mini { width: 36px; height: 52px; }
+  .card-mini .rank { font-size: 0.8em; }
+  .card-mini .suit { font-size: 0.9em; }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  body { padding: 0; overflow-x: hidden; }
+  .header { font-size: 1em; padding: 8px; }
+
+  /* Compact table */
+  .table-container { width: 100vw; height: 340px; }
+  .poker-table { width: 92vw; max-width: 380px; height: 220px; border-width: 6px; border-radius: 110px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.3); }
+  .phase-display { top: 12%; font-size: 0.65em; letter-spacing: 1px; }
+  .pot-display { top: 24%; font-size: 0.75em; padding: 3px 10px; }
+  .community { gap: 4px; }
+
+  /* Smaller cards */
+  .card { width: 38px; height: 54px; border-radius: 4px; }
+  .card .rank { font-size: 0.85em; }
+  .card .suit { font-size: 1em; }
+  .card-mini { width: 30px; height: 44px; }
+  .card-mini .rank { font-size: 0.7em; }
+  .card-mini .suit { font-size: 0.8em; }
+  .card.facedown::after { font-size: 1.3em; }
+
+  /* Compact player info */
+  .player-info { padding: 3px 8px; min-width: 80px; border-radius: 6px; }
+  .player-name { font-size: 0.65em; }
+  .player-chips { font-size: 0.6em; }
+  .player-bet { font-size: 0.55em; }
+  .player-action-label { font-size: 0.55em; }
+  .player-hand { gap: 2px; margin-bottom: 3px; }
+
+  /* Adjusted player positions for mobile */
+  .player-0 { bottom: -5px; }
+  .player-1 { top: 30px; left: -5px; }
+  .player-2 { top: -5px; }
+  .player-3 { top: 30px; right: -5px; }
+
+  /* Controls - bigger touch targets */
+  .controls { padding: 8px 4px; gap: 6px; }
+  .btn { padding: 10px 14px; font-size: 0.85em; letter-spacing: 0; border-radius: 6px; min-height: 44px; }
+  .btn-deal { padding: 12px 28px; font-size: 1em; }
+  .raise-input { width: 60px; padding: 8px 4px; font-size: 0.9em; min-height: 44px; }
+
+  /* Info panel - stacked, compact */
+  .info-panel { flex-direction: column; padding: 6px 8px; gap: 8px; }
+  .hand-info { padding: 8px 12px; }
+  .hand-info h3 { font-size: 0.75em; }
+  .hand-info .current-hand { font-size: 0.95em; }
+  .ref-table { padding: 8px 12px; max-height: 120px; }
+  .ref-table h3 { font-size: 0.75em; }
+  .ref-row { font-size: 0.65em; }
+  .message-log { padding: 8px 12px; max-height: 100px; }
+  .message-log h3 { font-size: 0.75em; }
+  .log-entry { font-size: 0.65em; }
+
+  /* Result overlay */
+  .result-card { padding: 20px 16px; max-width: 92vw; }
+  .result-card h2 { font-size: 1.1em; }
+  .result-player { font-size: 0.85em; padding: 6px 0; flex-wrap: wrap; gap: 4px; }
+  .result-hand-name { font-size: 0.75em; }
+
+  /* Rules overlay */
+  .rules-box { padding: 18px 16px; max-width: 95vw; }
+  .rules-box h2 { font-size: 1.1em; }
+  .rules-section h3 { font-size: 0.9em; }
+  .rules-section p, .rules-section li { font-size: 0.8em; }
+  .action-name { font-size: 0.8em; }
+  .action-desc { font-size: 0.75em; }
+
+  /* Top buttons */
+  .btn-rules { padding: 4px 10px; font-size: 0.7em; top: 8px; }
+
+  /* Tutorial tip */
+  #tutorialTip { bottom: 70px; max-width: 95vw; padding: 10px 14px; font-size: 0.9em; }
 }
 </style>
 </head>
