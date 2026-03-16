@@ -126,9 +126,9 @@ function renderPlayers() {
       ${handHTML}
       <div class="player-info">
         <div class="player-name">${p.name}${i === game.dealerIndex ? ' D' : ''}</div>
-        <div class="player-chips">$ ${p.chips}</div>
-        ${p.bet > 0 ? `<div class="player-bet">Bet: ${p.bet}</div>` : ''}
-        <div class="player-action-label">${p.folded ? 'FOLD' : (p.allIn ? 'ALL-IN' : '')}</div>
+        <div class="player-chips">筹码: ${p.chips}</div>
+        ${p.bet > 0 ? `<div class="player-bet">下注: ${p.bet}</div>` : ''}
+        <div class="player-action-label">${p.folded ? '已弃牌' : (p.allIn ? '全押!' : '')}</div>
       </div>`;
   });
 }
@@ -136,16 +136,46 @@ function renderPlayers() {
 function renderCommunity() {
   const el = document.getElementById('communityCards');
   el.innerHTML = game.communityCards.map(c => createCardHTML(c)).join('');
-  document.getElementById('potDisplay').textContent = `Pot: ${game.pot}`;
-  const phaseNames = { idle: '点击 Deal 开始', preflop: 'PREFLOP / 翻牌前', flop: 'FLOP / 翻牌', turn: 'TURN / 转牌', river: 'RIVER / 河牌', showdown: 'SHOWDOWN / 摊牌', ended: '结束' };
+  document.getElementById('potDisplay').textContent = `奖池: ${game.pot}`;
+  const phaseNames = { idle: '点击下方按钮开始', preflop: '翻牌前 (还没翻公共牌)', flop: '翻牌 (公共牌 3 张)', turn: '转牌 (公共牌 4 张)', river: '河牌 (公共牌 5 张)', showdown: '摊牌比大小', ended: '本局结束' };
   document.getElementById('phaseDisplay').textContent = phaseNames[game.phase] || game.phase.toUpperCase();
 }
+
+const HAND_EXPLANATIONS = {
+  9: '你的 5 张牌是同花色的 A K Q J 10，最无敌的牌！',
+  8: '你的 5 张牌是同花色且连续的，比如 ♥5 ♥6 ♥7 ♥8 ♥9',
+  7: '你有 4 张一样大的牌！比如 4 个 K',
+  6: '3 张一样 + 2 张一样，比如 3 个 J + 2 个 5',
+  5: '你有 5 张同花色的牌（不需要连续）',
+  4: '你有 5 张连续的牌（不需要同花色），比如 3 4 5 6 7',
+  3: '你有 3 张一样大的牌，比如 3 个 Q',
+  2: '你有 2 组对子，比如 2 个 A + 2 个 8',
+  1: '你有 2 张一样大的牌，比如 2 个 K',
+  0: '什么组合都没有，只能比最大的那张单牌',
+  [-1]: '还没翻公共牌，先看看你的 2 张底牌'
+};
 
 function renderHandInfo() {
   const info = game.getPlayerHandInfo(0);
   const el = document.getElementById('currentHand');
-  if (!info) { el.textContent = '-'; return; }
+  if (!info) { el.textContent = '-'; document.getElementById('handExplain').innerHTML = ''; return; }
   el.textContent = info.handName;
+
+  // Show explanation
+  const explainEl = document.getElementById('handExplain');
+  const explanation = HAND_EXPLANATIONS[info.rank] || '';
+
+  // Show which cards form the hand
+  let cardsHTML = '';
+  if (info.bestCards && info.rank >= 0) {
+    cardsHTML = '<div style="display:flex;gap:3px;margin-top:6px;flex-wrap:wrap;">' +
+      info.bestCards.map(c => {
+        const color = (c.suit === 'hearts' || c.suit === 'diamonds') ? '#e74c3c' : '#2c3e50';
+        return `<span style="background:#fff;color:${color};padding:2px 5px;border-radius:3px;font-weight:bold;font-size:0.8em;">${c.rank}${SUIT_SYMBOLS[c.suit]}</span>`;
+      }).join('') + '</div>';
+  }
+
+  explainEl.innerHTML = `<div style="font-size:0.75em;color:#aaa;margin-top:4px;">${explanation}</div>${cardsHTML}`;
 
   document.querySelectorAll('.ref-row').forEach(row => {
     row.classList.toggle('highlight', parseInt(row.dataset.rank) === info.rank);
