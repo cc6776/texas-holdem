@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Texas Hold'em Poker</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1a1a2e; font-family: 'Segoe UI', sans-serif; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+.header { text-align: center; padding: 12px; font-size: 1.3em; font-weight: bold; color: #ffd700; letter-spacing: 2px; }
+
+/* Table */
+.table-container { position: relative; width: 900px; height: 520px; margin: 0 auto; }
+.poker-table { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 700px; height: 360px; background: radial-gradient(ellipse, #2d6a2d, #1a4a1a); border-radius: 180px; border: 12px solid #5c3a1e; box-shadow: 0 0 40px rgba(0,0,0,0.6), inset 0 0 60px rgba(0,0,0,0.3); }
+
+/* Community cards area */
+.community { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: 8px; }
+.pot-display { position: absolute; top: 28%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); padding: 4px 16px; border-radius: 12px; font-size: 0.9em; color: #ffd700; }
+.phase-display { position: absolute; top: 18%; left: 50%; transform: translateX(-50%); font-size: 0.8em; color: #aaa; text-transform: uppercase; letter-spacing: 3px; }
+
+/* Player positions */
+.player { position: absolute; display: flex; flex-direction: column; align-items: center; transition: all 0.3s; }
+.player.active { filter: drop-shadow(0 0 12px #ffd700); }
+.player.folded { opacity: 0.35; }
+.player-info { background: rgba(0,0,0,0.7); border-radius: 10px; padding: 6px 14px; text-align: center; min-width: 120px; border: 2px solid transparent; }
+.player.active .player-info { border-color: #ffd700; }
+.player-name { font-size: 0.85em; font-weight: bold; }
+.player-chips { font-size: 0.75em; color: #ffd700; margin-top: 2px; }
+.player-bet { font-size: 0.7em; color: #4ecdc4; margin-top: 2px; }
+.player-hand { display: flex; gap: 4px; margin-bottom: 6px; }
+.player-action-label { font-size: 0.7em; color: #ff6b6b; margin-top: 3px; min-height: 1em; }
+
+/* Player positions around table */
+.player-0 { bottom: -10px; left: 50%; transform: translateX(-50%); }
+.player-1 { top: 40px; left: -10px; }
+.player-2 { top: -10px; left: 50%; transform: translateX(-50%); }
+.player-3 { top: 40px; right: -10px; }
+
+/* Cards */
+.card { width: 58px; height: 82px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; box-shadow: 1px 2px 6px rgba(0,0,0,0.4); position: relative; transition: transform 0.3s; }
+.card:hover { transform: translateY(-4px); }
+.card .rank { font-size: 1.1em; line-height: 1; }
+.card .suit { font-size: 1.3em; line-height: 1; }
+.card.red { color: #e74c3c; }
+.card.black { color: #2c3e50; }
+.card.facedown { background: linear-gradient(135deg, #1a3a5c, #2c5f8a); border: 2px solid #4a90c2; }
+.card.facedown::after { content: '🂠'; font-size: 2em; color: rgba(255,255,255,0.3); }
+.card-mini { width: 44px; height: 62px; font-size: 0.8em; }
+.card-mini .rank { font-size: 0.9em; }
+.card-mini .suit { font-size: 1em; }
+
+/* Controls */
+.controls { padding: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.btn { padding: 10px 24px; border: none; border-radius: 8px; font-size: 1em; font-weight: bold; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.btn-fold { background: #e74c3c; color: #fff; }
+.btn-check { background: #3498db; color: #fff; }
+.btn-call { background: #2ecc71; color: #fff; }
+.btn-raise { background: #f39c12; color: #fff; }
+.btn-allin { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; }
+.btn-deal { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #1a1a2e; font-size: 1.1em; padding: 12px 36px; }
+
+.raise-input { width: 80px; padding: 8px; border-radius: 6px; border: 2px solid #f39c12; background: #2a2a4a; color: #fff; font-size: 1em; text-align: center; }
+
+/* Hand info panel */
+.info-panel { display: flex; gap: 20px; padding: 8px 20px; max-width: 900px; width: 100%; }
+.hand-info { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 16px; flex: 1; }
+.hand-info h3 { font-size: 0.85em; color: #ffd700; margin-bottom: 4px; }
+.hand-info .current-hand { font-size: 1.1em; color: #4ecdc4; font-weight: bold; }
+
+/* Reference table */
+.ref-table { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 16px; flex: 1; max-height: 160px; overflow-y: auto; }
+.ref-table h3 { font-size: 0.85em; color: #ffd700; margin-bottom: 6px; }
+.ref-row { display: flex; justify-content: space-between; font-size: 0.75em; padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.ref-row.highlight { color: #4ecdc4; font-weight: bold; }
+
+/* Message log */
+.message-log { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px 16px; flex: 1; max-height: 160px; overflow-y: auto; }
+.message-log h3 { font-size: 0.85em; color: #ffd700; margin-bottom: 4px; }
+.log-entry { font-size: 0.75em; color: #ccc; padding: 2px 0; }
+
+/* Showdown overlay */
+.overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 100; justify-content: center; align-items: center; }
+.overlay.show { display: flex; }
+.result-card { background: #1e1e3a; border: 2px solid #ffd700; border-radius: 16px; padding: 30px 40px; text-align: center; max-width: 500px; }
+.result-card h2 { color: #ffd700; margin-bottom: 16px; }
+.result-players { text-align: left; margin: 16px 0; }
+.result-player { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+.result-player.winner { color: #ffd700; font-weight: bold; }
+.result-hand-name { font-size: 0.85em; color: #4ecdc4; }
+
+@media (max-width: 960px) {
+  .table-container { width: 100vw; height: 400px; transform: scale(0.85); }
+  .info-panel { flex-direction: column; padding: 8px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">♠ Texas Hold'em Poker ♥</div>
+
+<div class="table-container">
+  <div class="poker-table">
+    <div class="phase-display" id="phaseDisplay">Click Deal to Start</div>
+    <div class="pot-display" id="potDisplay">Pot: 0</div>
+    <div class="community" id="communityCards"></div>
+  </div>
+  <!-- Players -->
+  <div class="player player-0" id="player0"></div>
+  <div class="player player-1" id="player1"></div>
+  <div class="player player-2" id="player2"></div>
+  <div class="player player-3" id="player3"></div>
+</div>
+
+<div class="controls" id="controls">
+  <button class="btn btn-deal" id="btnDeal" onclick="startNewHand()">Deal / 发牌</button>
+</div>
+
+<div class="info-panel">
+  <div class="hand-info">
+    <h3>Your Hand / 你的牌型</h3>
+    <div class="current-hand" id="currentHand">-</div>
+  </div>
+  <div class="ref-table">
+    <h3>Hand Rankings / 牌型大小</h3>
+    <div class="ref-row" data-rank="9"><span>Royal Flush 皇家同花顺</span><span>★★★★★</span></div>
+    <div class="ref-row" data-rank="8"><span>Straight Flush 同花顺</span><span>★★★★☆</span></div>
+    <div class="ref-row" data-rank="7"><span>Four of a Kind 四条</span><span>★★★★</span></div>
+    <div class="ref-row" data-rank="6"><span>Full House 葫芦</span><span>★★★☆</span></div>
+    <div class="ref-row" data-rank="5"><span>Flush 同花</span><span>★★★</span></div>
+    <div class="ref-row" data-rank="4"><span>Straight 顺子</span><span>★★☆</span></div>
+    <div class="ref-row" data-rank="3"><span>Three of a Kind 三条</span><span>★★</span></div>
+    <div class="ref-row" data-rank="2"><span>Two Pair 两对</span><span>★☆</span></div>
+    <div class="ref-row" data-rank="1"><span>One Pair 一对</span><span>★</span></div>
+    <div class="ref-row" data-rank="0"><span>High Card 高牌</span><span>☆</span></div>
+  </div>
+  <div class="message-log">
+    <h3>Actions / 行动记录</h3>
+    <div id="logContent"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card" id="resultCard"></div>
+</div>
+
+<script src="game.js"></script>
+<script src="ui.js"></script>
+</body>
+</html>
