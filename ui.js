@@ -126,9 +126,9 @@ function renderPlayers() {
       ${handHTML}
       <div class="player-info">
         <div class="player-name">${p.name}${i === game.dealerIndex ? ' D' : ''}</div>
-        <div class="player-chips">筹码: ${p.chips}</div>
-        ${p.bet > 0 ? `<div class="player-bet">下注: ${p.bet}</div>` : ''}
-        <div class="player-action-label">${p.folded ? '已弃牌' : (p.allIn ? '全押!' : '')}</div>
+        <div class="player-chips">Chips 筹码: ${p.chips}</div>
+        ${p.bet > 0 ? `<div class="player-bet">Bet 下注: ${p.bet}</div>` : ''}
+        <div class="player-action-label">${p.folded ? 'FOLD 已弃牌' : (p.allIn ? 'ALL-IN 全押!' : '')}</div>
       </div>`;
   });
 }
@@ -136,8 +136,8 @@ function renderPlayers() {
 function renderCommunity() {
   const el = document.getElementById('communityCards');
   el.innerHTML = game.communityCards.map(c => createCardHTML(c)).join('');
-  document.getElementById('potDisplay').textContent = `奖池: ${game.pot}`;
-  const phaseNames = { idle: '点击下方按钮开始', preflop: '翻牌前 (还没翻公共牌)', flop: '翻牌 (公共牌 3 张)', turn: '转牌 (公共牌 4 张)', river: '河牌 (公共牌 5 张)', showdown: '摊牌比大小', ended: '本局结束' };
+  document.getElementById('potDisplay').textContent = `Pot 奖池: ${game.pot}`;
+  const phaseNames = { idle: 'Click Deal / 点击发牌开始', preflop: 'PREFLOP / 翻牌前', flop: 'FLOP / 翻牌 (3张公共牌)', turn: 'TURN / 转牌 (4张公共牌)', river: 'RIVER / 河牌 (5张公共牌)', showdown: 'SHOWDOWN / 摊牌比大小', ended: 'ENDED / 本局结束' };
   document.getElementById('phaseDisplay').textContent = phaseNames[game.phase] || game.phase.toUpperCase();
 }
 
