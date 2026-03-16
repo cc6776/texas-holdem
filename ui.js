@@ -300,7 +300,25 @@ function processResult(result) {
     }
   }
 
-  if (result.status === 'ai_turn') {
+  if (result.status === 'auto_deal_next') {
+    // No betting possible, but show cards with delay so user can see
+    log(`(No betting needed / 无需下注，自动发牌)`);
+    renderAll();
+    setTimeout(() => {
+      const next = game.nextPhase();
+      renderAll();
+      processResult(next);
+    }, 1500);
+  } else if (result.status === 'auto_deal_done') {
+    // All cards dealt, go to showdown with delay
+    log(`(All cards dealt / 公共牌已全部翻开)`);
+    renderAll();
+    setTimeout(() => {
+      const sd = game.showdown();
+      renderAll();
+      processResult(sd);
+    }, 1500);
+  } else if (result.status === 'ai_turn') {
     setTimeout(() => {
       const aiResult = game.runAI();
       log(game.lastAction);

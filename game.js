@@ -213,7 +213,7 @@ class TexasHoldem {
     this.postBlind(this.sbIndex, this.smallBlind);
     this.postBlind(this.bbIndex, this.bigBlind);
     this.currentBet = this.bigBlind;
-    this.activePlayerIndex = this.nextActive(bbIdx);
+    this.activePlayerIndex = this.nextActive(this.bbIndex);
 
     return this.checkForHumanTurn();
   }
@@ -335,10 +335,12 @@ class TexasHoldem {
         return this.showdown();
     }
 
-    // If only 1 or fewer players can act, skip to showdown
+    // If only 1 or fewer players can act, no betting needed
     if (this.actingPlayers().length <= 1) {
-      if (this.phase === 'river' || this.communityCards.length === 5) return this.showdown();
-      return this.nextPhase();
+      if (this.phase === 'river' || this.communityCards.length === 5) {
+        return { status: 'auto_deal_done' };
+      }
+      return { status: 'auto_deal_next' };
     }
 
     this.activePlayerIndex = this.nextActive(this.dealerIndex);
